@@ -1,0 +1,25 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Sem login visível: o app entra sozinho como anônimo.
+    // Só o app consegue ler e gravar, e só nestes três lugares, no formato certo.
+    match /estado/{id} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null
+        && request.resource.data.s is int
+        && request.resource.data.s >= 0 && request.resource.data.s <= 4;
+    }
+    match /checks/{id} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null
+        && request.resource.data.v is list
+        && request.resource.data.v.size() <= 60;
+    }
+    match /ideias/{id} {
+      allow read, delete: if request.auth != null;
+      allow create, update: if request.auth != null
+        && request.resource.data.texto is string
+        && request.resource.data.texto.size() <= 1000;
+    }
+  }
+}
