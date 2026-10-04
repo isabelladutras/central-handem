@@ -498,6 +498,7 @@ function renderGrav(){
 }
 
 let storyDate = null;
+const CICLO_INICIO = "2026-10-05";
 function addDays(s,n){const d=parse(s);d.setDate(d.getDate()+n);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`}
 function daysBetween(a,b){return Math.round((parse(b)-parse(a))/86400000)}
 function storyPlan(ds){
@@ -515,14 +516,15 @@ function storyPlan(ds){
   return out;
 }
 function renderStories(){
-  const t=todayStr(); if(!storyDate) storyDate=t;
-  const start=addDays(t,-3);
+  const t=todayStr(); if(!storyDate) storyDate = t<CICLO_INICIO ? CICLO_INICIO : t;
+  if(storyDate<CICLO_INICIO) storyDate=CICLO_INICIO;
+  const back=addDays(t,-3); const start = back<CICLO_INICIO ? CICLO_INICIO : back;
   const strip=[...Array(17)].map((_,k)=>addDays(start,k));
   const sd=parse(storyDate), plan=storyPlan(storyDate);
   const key="dia-"+storyDate, done=ck(key);
   $("#v-stories").innerHTML = `<h2>Stories</h2>
-    <div class="row" style="margin:4px 0 8px"><button class="btn ghost" type="button" data-sday="${addDays(storyDate,-1)}" aria-label="Dia anterior">‹ anterior</button>
-      <label class="note" for="storyPick" style="display:flex;gap:6px;align-items:center">Ir para <input id="storyPick" type="date" value="${storyDate}" style="font:inherit;border:1px solid var(--line);border-radius:8px;padding:4px 6px;background:var(--surface);color:var(--ink)"></label>
+    <div class="row" style="margin:4px 0 8px"><button class="btn ghost" type="button" data-sday="${addDays(storyDate,-1)}" aria-label="Dia anterior"${storyDate<=CICLO_INICIO?" disabled":""}>‹ anterior</button>
+      <label class="note" for="storyPick" style="display:flex;gap:6px;align-items:center">Ir para <input id="storyPick" type="date" min="${CICLO_INICIO}" value="${storyDate}" style="font:inherit;border:1px solid var(--line);border-radius:8px;padding:4px 6px;background:var(--surface);color:var(--ink)"></label>
       <button class="btn ghost" type="button" data-sday="${addDays(storyDate,1)}" aria-label="Próximo dia">próximo ›</button></div>
     <div class="days" role="group" aria-label="Escolher dia">${strip.map(x=>{const dx=parse(x);return `<button type="button" data-sday="${x}" aria-pressed="${x===storyDate}" class="${x===t?"today":""}"><span>${DOW[dx.getDay()]}</span><b>${dx.getDate()}</b>${(TEATRO.some(([y])=>y===x)||CAPDAYS.some(c=>c.d===x))?'<i aria-hidden="true"></i>':""}</button>`}).join("")}</div>
     <h3>${storyDate===t?"Hoje · ":""}${DOWL[sd.getDay()]}, ${sd.getDate()} de ${MON[sd.getMonth()]}</h3>
@@ -642,18 +644,18 @@ function startFirebase(){
     if(!user){ auth.signInAnonymously().catch(()=>setSync("sem conexão, salvo no aparelho")); return }
     fs=db; setSync("sincronizando…");
     const onErr=e=>{ setSync(e&&e.code==="permission-denied"?"sem permissão: confira as regras do Firebase":"sem conexão, salvo no aparelho") };
-    unsubs.push(db.collection("estado").onSnapshot(snap=>{
+    unsubs.push(db.collection("estado").onSnapshot({includeMetadataChanges:true},snap=>{
       for(const k in state) delete state[k];
       snap.docs.forEach(d=>{const v=d.data(); if(v&&typeof v.s==="number") state[d.id]=v.s});
-      setSync(snap.metadata.fromCache?"offline, sincroniza ao voltar":"sincronizado");
+      setSync(snap.metadata.fromCache ? (navigator.onLine===false?"offline, sincroniza ao voltar":"conectando…") : "sincronizado");
       renderAll(); if(view==="stories") renderStories();
     },onErr));
-    unsubs.push(db.collection("checks").onSnapshot(snap=>{
+    unsubs.push(db.collection("checks").onSnapshot({includeMetadataChanges:true},snap=>{
       for(const k in checks) delete checks[k];
       snap.docs.forEach(d=>{const v=d.data(); if(v&&Array.isArray(v.v)) checks[d.id]=v.v});
       renderAll(); if(view==="stories") renderStories();
     },onErr));
-    unsubs.push(db.collection("ideias").onSnapshot(snap=>{
+    unsubs.push(db.collection("ideias").onSnapshot({includeMetadataChanges:true},snap=>{
       ideas.length=0; snap.docs.forEach(d=>{const v=d.data(); if(v) ideas.push({id:d.id,texto:String(v.texto||""),criada:v.criada})});
       if(view==="ideias") renderIdeias();
     },onErr));
@@ -668,14 +670,14 @@ document.addEventListener("change",e=>{
   const cp=e.target.closest("[data-cap]"); if(cp){ setCap(cp.dataset.cap,cp.dataset.k,cp.checked); renderGrav(); return }
   const tq=e.target.closest("[data-tea]"); if(tq){ setTea(Number(tq.dataset.tea),tq.checked); return }
   const dl=e.target.closest("[data-daily]"); if(dl){ setDaily(Number(dl.dataset.daily),dl.checked,dl.dataset.day); if(view==="stories") renderStories(); else dl.closest(".check").classList.toggle("done",dl.checked); return }
-  if(e.target.id==="storyPick"){ if(e.target.value){ storyDate=e.target.value; renderStories() } return }
+  if(e.target.id==="storyPick"){ if(e.target.value){ storyDate = e.target.value<CICLO_INICIO ? CICLO_INICIO : e.target.value; renderStories() } return }
   const c=e.target.closest(".check input"); if(c){ c.closest(".check").classList.toggle("done",c.checked) }
 });
 document.addEventListener("toggle",e=>{ const d=e.target; if(d.matches && d.matches("details[data-sess]") && d.open) openSess=d.dataset.sess; if(d.matches && d.matches("details[data-capday]") && d.open) openCap=d.dataset.capday; },true);
 document.addEventListener("click",e=>{
   const t=e.target.closest("nav.tabs button"); if(t){ view=t.dataset.v; document.querySelectorAll("nav.tabs button").forEach(b=>{ if(b===t) b.setAttribute("aria-current","page"); else b.removeAttribute("aria-current") }); document.querySelectorAll("main>section").forEach(sec=>sec.hidden = sec.id!=="v-"+view); render(); try{localStorage.setItem("handem-view",view)}catch(_){} window.scrollTo(0,0); return }
   const g=e.target.closest("[data-gocap]"); if(g){ openCap=g.dataset.gocap; document.querySelector('nav.tabs button[data-v="grav"]').click(); setTimeout(()=>{const el=document.querySelector(`[data-capday="${openCap}"]`); if(el) el.scrollIntoView({block:"start"})},50); return }
-  const sdb=e.target.closest("[data-sday]"); if(sdb){ storyDate=sdb.dataset.sday; renderStories(); const p=document.querySelector('.days [aria-pressed="true"]'); if(p) p.scrollIntoView({inline:"center",block:"nearest"}); return }
+  const sdb=e.target.closest("[data-sday]"); if(sdb){ if(sdb.disabled) return; storyDate = sdb.dataset.sday<CICLO_INICIO ? CICLO_INICIO : sdb.dataset.sday; renderStories(); const p=document.querySelector('.days [aria-pressed="true"]'); if(p) p.scrollIntoView({inline:"center",block:"nearest"}); return }
   const sw=e.target.closest("[data-swap]"); if(sw){ const sel=document.getElementById("sw-"+sw.dataset.swap); if(sel&&sel.value){ ITEMS.forEach(i=>{ if(ck("troca-"+i.id)[0]===sw.dataset.swap) setList("troca-"+i.id,[]) }); setList("troca-"+sel.value,[sw.dataset.swap]); renderAll(); renderIdeias(); sw.textContent="Trocado ✓" } return }
   const us=e.target.closest("[data-unswap]"); if(us){ setList("troca-"+us.dataset.unswap,[]); renderAll(); if(view==="ideias") renderIdeias(); return }
   const bs=e.target.closest("[data-bserie]"); if(bs){ bankSerie=bs.dataset.bserie; renderIdeias(); return }
