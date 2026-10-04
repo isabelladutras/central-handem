@@ -115,6 +115,18 @@ nav.tabs button[aria-current="page"]{color:var(--berry)}
 .callout{background:var(--nude-soft);border-left:3px solid var(--nude);padding:10px 12px;border-radius:8px;margin-top:10px;font-size:.88rem}
 .login{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
 .login input{font:inherit;border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--surface);color:var(--ink);width:100%}
+.days{display:flex;gap:6px;overflow-x:auto;margin:0 -16px;padding:2px 16px 6px;scrollbar-width:none}
+.days button{flex:none;width:52px;font:inherit;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:12px;padding:6px 0;display:flex;flex-direction:column;align-items:center;gap:1px;cursor:pointer;position:relative}
+.days button span{font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.days button b{font-size:1.05rem;font-variant-numeric:tabular-nums}
+.days button.today{border-color:var(--berry)}
+.days button[aria-pressed="true"]{background:var(--berry);border-color:var(--berry);color:var(--bg)}
+.days button[aria-pressed="true"] span{color:var(--bg)}
+.days button i{position:absolute;bottom:4px;width:5px;height:5px;border-radius:50%;background:var(--nude)}
+details.card>summary{cursor:pointer;font-weight:600;color:var(--ink);font-size:.9rem}
+.swapbox{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px;padding-top:10px;border-top:1px solid var(--line)}
+.swapbox select{flex:1 1 200px;min-width:0;border-radius:10px}
+.swapped-note{font-size:.75rem;color:var(--berry);font-weight:600}
 .empty{padding:18px;text-align:center;color:var(--muted);font-size:.85rem;border:1px dashed var(--line);border-radius:var(--r)}
 @media (prefers-reduced-motion:no-preference){.card{transition:border-color .15s}}
 </style>
@@ -144,7 +156,7 @@ nav.tabs button[aria-current="page"]{color:var(--berry)}
     <button data-v="cal"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Calendário</button>
     <button data-v="grav"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="13" height="11" rx="2"/><path d="M16 11l5-3v9l-5-3"/></svg>Gravar</button>
     <button data-v="stories"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke-dasharray="4 2.5"/><circle cx="12" cy="12" r="4.5"/></svg>Stories</button>
-    <button data-v="ideias"><svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.4 1 1.1 1 1.8V16h5v-.3c0-.7.4-1.4 1-1.8A6 6 0 0 0 12 3z"/></svg>Ideias</button>
+    <button data-v="ideias"><svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.4 1 1.1 1 1.8V16h5v-.3c0-.7.4-1.4 1-1.8A6 6 0 0 0 12 3z"/></svg>Narrativas</button>
   </div>
 </nav>
 
@@ -270,6 +282,46 @@ const CAPDAYS = [
 ];
 const CAPRULES = "Vertical, câmera traseira, lente limpa. Clipes de 5–10s, segurando 2s antes e depois. Sem falar durante o take. Tudo no álbum compartilhado no mesmo dia, com o nome do dia.";
 
+const BANK = [
+ {id:"n01",serie:"Casar depois de 11 anos",esf:"15 min",t:"Depois de 11 anos juntos, a gente decidiu casar.",f:"Reel 20–30s com fotos antigas e atuais",o:"Abrir a narrativa e gerar conversa",h:"Onze anos de união estável. E agora a gente decidiu casar.",dev:"Fotos de vocês ao longo dos anos em sequência rápida, terminando numa atual. Uma frase sua sobre por que agora, sem explicar tudo.",c:"Fotos antigas no celular + 1 take seu falando no fim.",q:"O que você acha que muda depois de tanto tempo junto?"},
+ {id:"n02",serie:"Casar depois de 11 anos",esf:"Gravação",t:"Maquio noiva há 7 anos. Agora a noiva sou eu.",f:"Reel bate-papo, 45–60s",o:"Unir a narrativa ao seu trabalho com noivas",h:"Eu já maquiei centenas de noivas. Nunca pensei em como seria estar do outro lado da cadeira.",dev:"O que você sempre viu nas noivas na manhã do casamento e o que está sentindo agora que vai viver isso.",c:"Fala + cortes de noivas que você maquiou (com autorização).",q:"Noivas que me acompanham: o que vocês sentiram na manhã do casamento?"},
+ {id:"n03",serie:"Casar depois de 11 anos",esf:"15 min",t:"Quem maquia a maquiadora?",f:"Reel curto, 15–20s, enquete",o:"Comentários",h:"Pergunta séria: quem maquia a maquiadora no dia do casamento dela?",dev:"Duas opções na tela: eu mesma ou outra maquiadora. Deixar a resposta em aberto.",c:"Você na bancada olhando para a câmera.",q:"Eu mesma ou chamo alguém? Me ajuda."},
+ {id:"n04",serie:"Casar depois de 11 anos",esf:"Gravação",t:"O que eu sempre digo pras minhas noivas e agora vou ter que seguir",f:"Reel tutorial/dicas, 45–60s",o:"Utilidade para noivas + autoridade",h:"Tem coisa que eu falo pra toda noiva. Agora é a minha vez de obedecer.",dev:"3 conselhos reais: teste de maquiagem antes, pele sem novidade na última semana, maquiagem que aguente o dia inteiro.",c:"Você na bancada demonstrando cada ponto.",q:"Qual desses você não sabia?"},
+ {id:"n05",serie:"Casar depois de 11 anos",esf:"Gravação",t:"Meu teste de maquiagem de noiva: A ou B?",f:"Reel 20–30s, duas versões",o:"Comentários + quem acompanha decide junto",h:"Fiz duas maquiagens de teste para o meu casamento. Vocês escolhem.",dev:"Versão A e versão B lado a lado, mesma luz. Resultado depois nos Stories.",c:"Você com cada versão, luz natural, de frente e de perfil.",q:"A ou B?"},
+ {id:"n06",serie:"Casar depois de 11 anos",esf:"Gravação",t:"Por que casar depois de 11 anos?",f:"Reel bate-papo, 45–60s",o:"Conexão",h:"Muita gente me perguntou: depois de 11 anos, por que casar agora?",dev:"Sua resposta, com calma. O que mudou e o que continua igual.",c:"Plano fechado, luz suave.",q:"Você acha que casar muda alguma coisa depois de tanto tempo?"},
+ {id:"n07",serie:"Casar depois de 11 anos",esf:"15 min",t:"Organizar um casamento tocando 4 empresas",f:"Reel bastidor, 20–30s",o:"Negócios + vida real",h:"Organizar um casamento enquanto abre uma unidade em outro estado. Vamos ver no que dá.",dev:"Bastidor sincero: lista, reuniões, prioridades. Sem glamourizar.",c:"Agenda, notebook, lista, você entre uma reunião e outra.",q:"Quem aqui também está organizando tudo ao mesmo tempo?"},
+ {id:"n08",serie:"Casar depois de 11 anos",esf:"Ao vivo",t:"Uma despedida do jeito Handem Club",f:"Reel do evento",o:"Ligar o casamento à comunidade",h:"Em vez de despedida de solteira, eu quis um encontro de mulheres.",dev:"Uma edição especial do Club como despedida. Mostrar o encontro e por que você escolheu assim.",c:"Checklist do tipo Club na aba Gravar.",q:"Você faria uma despedida assim?"},
+ {id:"n09",serie:"Casar depois de 11 anos",esf:"15 min",t:"Diário da noiva maquiadora",f:"Série de Stories semanal",o:"Fazer as pessoas voltarem",h:"Diário da noiva maquiadora · faltam X dias.",dev:"Um Story por semana com uma decisão ou um bastidor: vestido (sem mostrar), pele, cardápio, convite.",c:"O que estiver acontecendo naquela semana.",q:"Enquete ou caixinha em cada edição."},
+ {id:"n10",serie:"Automaquiagem",esf:"Gravação",t:"Coisas óbvias pra mim na automaquiagem — parte 3",f:"Reel tutorial, 40–60s",o:"Série recorrente",h:"Parte 3, com as dúvidas que vocês mandaram.",dev:"4–5 dicas tiradas dos comentários das partes 1 e 2.",c:"Close de cada aplicação + texto curto por dica.",q:"Qual dúvida ficou de fora?"},
+ {id:"n11",serie:"Automaquiagem",esf:"15 min",t:"Maquiagem com 3 produtos",f:"Reel 20–30s, acelerado",o:"Alcance + respiro",h:"Três produtos. É isso que eu uso quando não tenho tempo.",dev:"Sem tese: os 3 produtos e o resultado.",c:"Bancada, aplicação rápida, resultado em luz natural.",q:"Quais seriam os seus 3?"},
+ {id:"n12",serie:"Pele madura",esf:"Gravação",t:"Na pele madura, textura vem antes da cor",f:"Reel técnico, 30–45s",o:"Autoridade",h:"Antes de escolher a cor da base, olha a textura.",dev:"Base mais fluida x mais densa na mesma pele, com close mostrando a diferença.",c:"Modelo de pele madura, luz lateral.",q:"Você escolhe base pela cor ou pela textura?"},
+ {id:"n13",serie:"Pele madura",esf:"Gravação",t:"Corretivo na pele madura: menos onde marca",f:"Reel técnico, 30–45s",o:"Técnica + salvamentos",h:"Na pele madura, o corretivo vai onde escurece, não onde marca.",dev:"Onde aplicar, onde evitar e a quantidade certa.",c:"Close do olho, lado certo e lado errado.",q:"Seu corretivo marca nas linhas?"},
+ {id:"n14",serie:"Autocuidado",esf:"15 min",t:"Uma coisa que eu faço só por mim toda semana",f:"Reel bate-papo curto, 20–30s",o:"Conexão + Club",h:"Tem uma coisa que eu não abro mão, nem na semana mais corrida.",dev:"O que é, por que importa, sem receita para ninguém.",c:"Você fazendo essa coisa + fala curta.",q:"E você, o que faz só por você?"},
+ {id:"n15",serie:"Autoconhecimento",esf:"Gravação",t:"Uma coisa que eu entendi sobre mim este ano",f:"Reel bate-papo, 45–60s",o:"Profundidade",h:"Esse ano eu entendi uma coisa sobre mim que mudou a forma como eu trabalho.",dev:"Uma percepção real, com um exemplo concreto. Sem lição pronta.",c:"Plano fechado.",q:"O que você entendeu sobre você este ano?"},
+ {id:"n16",serie:"Negócios",esf:"15 min",t:"Como eu organizo o conteúdo com 4 empresas",f:"Reel bastidor, 20–30s",o:"Negócios + curiosidade",h:"Eu criei um app só pra não esquecer o que postar.",dev:"Mostrar a Central: o post do dia, o dia de gravação e o checklist de quem filma.",c:"Tela do celular gravada + você usando no dia a dia.",q:"Quer que eu mostre como montei?"},
+ {id:"n17",serie:"Negócios",esf:"Gravação",t:"Um erro que me custou caro e o que eu mudei",f:"Reel bate-papo, 45–60s",o:"Negócios com história real",h:"Teve um erro que me custou caro. E eu demorei pra admitir.",dev:"Um erro concreto, o que aconteceu e o que você faz diferente hoje.",c:"Plano médio, tom de conversa.",q:"Qual erro te ensinou mais?"},
+ {id:"n18",serie:"Handem Club",esf:"Gravação",t:"Por que eu criei o Handem Club",f:"Reel bate-papo + imagens do Club",o:"Comunidade + lista do Club",h:"O Handem Club nasceu de uma pergunta que eu me fazia.",dev:"A origem real do Club e o que você quer que ele seja. Fechar com “Manda CLUB no direct”.",c:"Fala + imagens do Beauty Experience e da Oficina de Velas.",q:"Manda CLUB no direct pra entrar na lista."}
+];
+const BANKBY = Object.fromEntries(BANK.map(b=>[b.id,b]));
+function swapOf(id){ const a=ck("troca-"+id); return a.length?BANKBY[a[0]]:null }
+function resolved(i){ const b=swapOf(i.id); return b?{...i,t:b.t,f:b.f,o:b.o,h:b.h,dev:b.dev,c:b.c,q:b.q,x:"",p:b.serie,swapped:b,orig:i.t}:i }
+let bankSerie="todas";
+function bankSection(){
+  const t=todayStr();
+  const upcoming=ITEMS.filter(i=>i.d>=t && st(i.id)<4).slice(0,16);
+  const used={}; ITEMS.forEach(i=>{const b=swapOf(i.id); if(b) used[b.id]=i});
+  const series=["todas",...new Set(BANK.map(b=>b.serie))];
+  const list=BANK.filter(b=>bankSerie==="todas"||b.serie===bankSerie);
+  return `<h2>Banco de narrativas</h2>
+    <p class="note">Se o post do dia não fizer sentido, troque por um daqui. A troca aparece no calendário e dá para desfazer.</p>
+    <div class="filters" role="group" aria-label="Série">${series.map(s=>`<button type="button" data-bserie="${esc(s)}" aria-pressed="${bankSerie===s}">${s==="todas"?"Todas":esc(s)}</button>`).join("")}</div>
+    <div class="stack">${list.map(b=>`<details class="card">
+      <summary><div class="row"><span class="when">${esc(b.serie)}</span><span class="chip ${b.esf==="Ao vivo"?"A":b.esf==="15 min"?"T":"P"}">${esc(b.esf)}</span></div><div class="title" style="margin-bottom:0">${esc(b.t)}</div>${used[b.id]?`<div class="note">Usado no lugar de ${esc(used[b.id].n)} (${fmt(used[b.id].d)})</div>`:""}</summary>
+      <dl><div><dt>Primeira frase</dt><dd class="hook">${esc(b.h)}</dd></div><div><dt>Formato</dt><dd>${esc(b.f)}</dd></div><div><dt>Desenvolvimento</dt><dd>${esc(b.dev)}</dd></div><div><dt>Cenas</dt><dd>${esc(b.c)}</dd></div><div><dt>Pergunta final</dt><dd>${esc(b.q)}</dd></div></dl>
+      <div class="swapbox"><label class="note" for="sw-${b.id}">Usar no lugar de</label><select id="sw-${b.id}">${upcoming.map(i=>`<option value="${i.id}">${esc(i.n)} · ${fmt(i.d)} · ${esc(resolved(i).t.slice(0,38))}${resolved(i).t.length>38?"…":""}</option>`).join("")}</select><button class="btn" type="button" data-swap="${b.id}">Trocar</button></div>
+    </details>`).join("")}</div>`;
+}
+
 const CAPTURE = ["Ambiente vazio, antes de tudo","Preparação e montagem","Suas mãos trabalhando","Você em ação, filmada por outra pessoa","Equipe","Detalhes (mesa, produto, decoração)","Pessoas chegando","Reações","Movimento (caminhada, porta abrindo)","Uma fala sua antes","Uma fala sua depois","Áudio natural: risadas e conversas","Resultado final","Autorização de imagem de clientes e alunas"];
 
 const STATUS = ["A fazer","Gravado","Editando","Pronto","Publicado"];
@@ -294,9 +346,11 @@ function statusSelect(i){
   const v = st(i.id);
   return `<select class="s${v}" data-st="${i.id}" aria-label="Status de ${esc(i.n)}">${STATUS.map((s,k)=>`<option value="${k}"${k===v?" selected":""}>${k===0?todoLabel(i):s}</option>`).join("")}</select>`;
 }
-function card(i,opts={}){
+function card(i0,opts={}){
+  const i=resolved(i0);
   return `<article class="card${opts.feature?" feature":""}">
     <div class="row"><span class="when">${esc(i.n)} · ${fmt(i.d)} · 10h</span>${statusSelect(i)}</div>
+    ${i.swapped?`<div class="swapped-note">Trocado · original: ${esc(i.orig)} <button class="btn ghost" type="button" data-unswap="${i.id}">desfazer</button></div>`:""}
     <div class="title">${esc(i.t)}</div>
     <div class="meta">${kindChip(i)}<span class="chip">${esc(i.p)}</span><span class="chip">${esc(i.f)}</span></div>
     <details${opts.open?" open":""}><summary>Roteiro</summary>
@@ -375,7 +429,8 @@ const BLOCOS = [
 ];
 const grp = i => i.top ? 3 : (/Autoral/.test(i.p) ? 2 : 1);
 let openSess = null;
-function videoCard(i){
+function videoCard(i0){
+  const i=resolved(i0);
   const done = st(i.id)>=1;
   return `<div class="card rec${done?" done-card":""}">
     <div class="check" style="border:0;padding:0"><input type="checkbox" id="r-${i.id}" data-rec="${i.id}"${done?" checked":""}><label for="r-${i.id}"><b>${esc(i.n)} — ${esc(i.t)}</b><span class="sub">post ${fmt(i.d)} · ${esc(i.f)}</span></label></div>
@@ -442,40 +497,52 @@ function renderGrav(){
     ${capSection()}`;
 }
 
+let storyDate = null;
+function addDays(s,n){const d=parse(s);d.setDate(d.getDate()+n);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`}
+function daysBetween(a,b){return Math.round((parse(b)-parse(a))/86400000)}
+function storyPlan(ds){
+  const d=parse(ds), out=[];
+  const rit=RITUALS[d.getDay()];
+  out.push({k:"Ritual de "+DOWL[d.getDay()].toLowerCase(),t:rit.r+": "+rit.m,s:"Interação: "+rit.i});
+  ITEMS.filter(i=>i.d===ds).forEach(i=>out.push({k:"Post do feed hoje",t:`1–2h depois do ${i.n} (“${i.t}”), um Story contando o contexto: “gravei isso porque…”. Nunca só “post novo”.`}));
+  const tea=TEATRO.find(([x])=>x===ds); if(tea) out.push({k:"Combinado com o Teatro da Ilha",t:tea[1],hl:1});
+  const cap=CAPDAYS.find(c=>c.d===ds); if(cap) out.push({k:"Dia ao vivo · "+cap.t,t:"Stories ao vivo ao longo do dia: chegada, um momento no meio, o resultado no fim. Quem filma para o feed não precisa parar para os Stories; use seu celular.",hl:1});
+  AGENDA.filter(([x])=>x===ds).forEach(([,e])=>{ if(!cap) out.push({k:"Na agenda hoje",t:e+": mostre nos Stories antes, durante e depois."}) });
+  if(ds>="2026-10-11" && ds<="2026-10-24"){const n=daysBetween(ds,"2026-10-24"); out.push({k:"Série Diário de SJC",t:n>0?`“Diário de SJC · faltam ${n} ${n===1?"dia":"dias"}”: um bastidor da preparação.`:"“Diário de SJC · hoje”: a inauguração."})}
+  if(ds>="2026-10-26" && ds<="2026-10-31"){const n=daysBetween(ds,"2026-10-31"); out.push({k:"Série Contagem pro Club",t:n>0?`“Contagem pro Club · faltam ${n}”: um detalhe da Oficina de Velas (cera, essência, kit). Toque em “você decide” num deles.`:"Hoje é o Club: Stories ao vivo."})}
+  if(d.getDay()===1) out.push({k:"Segunda",t:"Atualizar os destaques e postar a Agenda da semana com contagem regressiva."});
+  if(d.getDay()===5) out.push({k:"Sexta",t:"Revelar a resposta do “Certo ou errado?” se teve na terça."});
+  return out;
+}
 function renderStories(){
-  const today = new Date().getDay();
-  const order = [1,2,3,4,5,6,0];
+  const t=todayStr(); if(!storyDate) storyDate=t;
+  const start=addDays(t,-3);
+  const strip=[...Array(17)].map((_,k)=>addDays(start,k));
+  const sd=parse(storyDate), plan=storyPlan(storyDate);
+  const key="dia-"+storyDate, done=ck(key);
   $("#v-stories").innerHTML = `<h2>Stories</h2>
-    <p class="note">Rituais fixos fazem as pessoas voltarem. O resto continua espontâneo.</p>
-    <h3>Roteiro do dia · 8 a 15 Stories</h3>
-    <div class="card">${DAILY.map((x,k)=>`<div class="check${dailyDone(k)?" done":""}"><input type="checkbox" id="s-d-${k}" data-daily="${k}"${dailyDone(k)?" checked":""}><label for="s-d-${k}">${esc(x.g)}<span class="sub">${esc(x.m)} · ${esc(x.q)}</span></label></div>`).join("")}</div>
-    <div class="card" style="margin-top:10px"><ul class="plain" style="margin:0">
-      <li><b>Dia de post:</b> 1–2h depois, um Story com o contexto (“gravei isso porque…”), nunca só “post novo”.</li>
-      <li><b>Rosto falando</b> em pelo menos 3 Stories por dia.</li>
-      <li><b>Texto na tela</b> em todo Story com fala.</li>
-      <li><b>No máximo 1 Story de venda</b> a cada 5–6; link só com vaga ou data aberta.</li>
-      <li><b>Destaques</b> atualizados toda segunda.</li>
-    </ul></div>
-    <h3>Ritual de cada dia</h3>
-    <div class="card" style="overflow-x:auto"><table><tbody>${order.map(k=>{const r=RITUALS[k];return `<tr${k===today?' style="color:var(--berry)"':""}><td>${r.d.slice(0,3)}</td><td><b>${esc(r.r)}</b><br><span class="note">${esc(r.m)}</span><br><span class="note">↳ ${esc(r.i)}</span></td></tr>`}).join("")}</tbody></table></div>
-    <h3>Toda semana</h3>
-    <div class="card"><ul class="plain" style="margin:0">
-      <li><b>Você decide:</b> uma decisão real nas mãos de quem acompanha (cor das velas, sobremesa do Club, batom da inauguração), com o resultado depois.</li>
-      <li><b>Séries:</b> “Diário de SJC” (11 a 24/10) e “Contagem pro Club” (26 a 31/10), sempre com o mesmo título na tela.</li>
-      <li><b>Amigas do Club:</b> datas, vagas e bastidor exclusivo saem antes na lista Amigas Próximas.</li>
-    </ul></div>
-    <h3>Teatro da Ilha · 5 Stories combinados</h3>
-    <div class="card">${TEATRO.map(([d,x],k)=>`<div class="check"><input type="checkbox" id="tea-${k}" data-tea="${k}"${teaDone(k)?" checked":""}><label for="tea-${k}"><b>${fmt(d)}</b> · ${esc(x)}</label></div>`).join("")}</div>
-    <p class="note">No dia 29 você grava os takes do Reel (sai em 3/11). Stories ao vivo nesse dia são bônus.</p>
-    <h3>Checklist de captação ao vivo</h3>
-    <p class="note">Quinze clipes de 3–7s já montam um Reel. Vale para SJC, Club, noiva e aula.</p>
-    <div class="card">${CAPTURE.map((c,k)=>`<div class="check"><input type="checkbox" id="cap-${k}"><label for="cap-${k}">${esc(c)}</label></div>`).join("")}</div>
-    <p class="note">Essa lista zera quando você recarrega, para usar de novo no próximo evento.</p>`;
+    <div class="row" style="margin:4px 0 8px"><button class="btn ghost" type="button" data-sday="${addDays(storyDate,-1)}" aria-label="Dia anterior">‹ anterior</button>
+      <label class="note" for="storyPick" style="display:flex;gap:6px;align-items:center">Ir para <input id="storyPick" type="date" value="${storyDate}" style="font:inherit;border:1px solid var(--line);border-radius:8px;padding:4px 6px;background:var(--surface);color:var(--ink)"></label>
+      <button class="btn ghost" type="button" data-sday="${addDays(storyDate,1)}" aria-label="Próximo dia">próximo ›</button></div>
+    <div class="days" role="group" aria-label="Escolher dia">${strip.map(x=>{const dx=parse(x);return `<button type="button" data-sday="${x}" aria-pressed="${x===storyDate}" class="${x===t?"today":""}"><span>${DOW[dx.getDay()]}</span><b>${dx.getDate()}</b>${(TEATRO.some(([y])=>y===x)||CAPDAYS.some(c=>c.d===x))?'<i aria-hidden="true"></i>':""}</button>`}).join("")}</div>
+    <h3>${storyDate===t?"Hoje · ":""}${DOWL[sd.getDay()]}, ${sd.getDate()} de ${MON[sd.getMonth()]}</h3>
+    <div class="stack">${plan.map(p=>`<div class="card${p.hl?" feature":""}"><span class="when">${esc(p.k)}</span><div style="margin-top:4px">${esc(p.t)}</div>${p.s?`<p class="note" style="margin:6px 0 0">${esc(p.s)}</p>`:""}</div>`).join("")}</div>
+    <h3>Checklist do dia · ${done.length}/${DAILY.length}</h3>
+    <div class="card">${DAILY.map((x,k)=>`<div class="check${done.includes(k)?" done":""}"><input type="checkbox" id="s-d-${k}" data-daily="${k}" data-day="${storyDate}"${done.includes(k)?" checked":""}><label for="s-d-${k}">${esc(x.g)}<span class="sub">${esc(x.m)} · ${esc(x.q)}</span></label></div>`).join("")}</div>
+    <details class="card" style="margin-top:14px"><summary>Regras de sempre</summary><ul class="plain" style="margin:8px 0 0">
+      <li>8 a 15 Stories por dia, com rosto falando em pelo menos 3.</li>
+      <li>Texto na tela em todo Story com fala.</li>
+      <li>No máximo 1 Story de venda a cada 5–6; link só com vaga ou data aberta.</li>
+      <li>Uma vez por semana, um “você decide” com uma decisão real.</li>
+      <li>Datas, vagas e bastidor exclusivo saem antes na lista Amigas do Club.</li>
+    </ul></details>
+    <details class="card" style="margin-top:10px"><summary>Checklist de captação para eventos</summary>${CAPTURE.map((c,k)=>`<div class="check"><input type="checkbox" id="cap-${k}"><label for="cap-${k}">${esc(c)}</label></div>`).join("")}</details>`;
 }
 
 function renderIdeias(){
   const sorted = [...ideas].sort((a,b)=>(b.criada||0)-(a.criada||0));
-  $("#v-ideias").innerHTML = `<h2>Banco de ideias</h2>
+  $("#v-ideias").innerHTML = `${bankSection()}
+    <h2>Banco de ideias</h2>
     <p class="note">Qualquer pensamento entra aqui na hora. Depois a gente encaixa no calendário.</p>
     <form class="idea-form" id="ideaForm">
       <label for="ideaText" class="note">Nova ideia</label>
@@ -503,8 +570,9 @@ function renderAll(){ renderHoje(); renderCal(); renderGrav(); if(view==="ideias
 const checks = {}; // chave -> lista de itens marcados
 function ck(key){ return checks[key] || [] }
 function setCk(key,k,on){ let a=ck(key).filter(x=>x!==k); if(on) a.push(k); checks[key]=a; persistCheck(key) }
-function dailyDone(k){ return ck("dia-"+todayStr()).includes(k) }
-function setDaily(k,on){ setCk("dia-"+todayStr(),k,on) }
+function setList(key,arr){ checks[key]=arr; persistCheck(key) }
+function dailyDone(k,day){ return ck("dia-"+(day||todayStr())).includes(k) }
+function setDaily(k,on,day){ setCk("dia-"+(day||todayStr()),k,on) }
 function teaDone(k){ return ck("teatro").includes(k) }
 function setTea(k,on){ setCk("teatro",k,on) }
 
@@ -599,13 +667,18 @@ document.addEventListener("change",e=>{
   const r=e.target.closest("[data-rec]"); if(r){ const id=r.dataset.rec; const cur=st(id); setStatus(id, r.checked ? Math.max(cur,1) : 0); return }
   const cp=e.target.closest("[data-cap]"); if(cp){ setCap(cp.dataset.cap,cp.dataset.k,cp.checked); renderGrav(); return }
   const tq=e.target.closest("[data-tea]"); if(tq){ setTea(Number(tq.dataset.tea),tq.checked); return }
-  const dl=e.target.closest("[data-daily]"); if(dl){ setDaily(Number(dl.dataset.daily),dl.checked); dl.closest(".check").classList.toggle("done",dl.checked); document.querySelectorAll(`[data-daily="${dl.dataset.daily}"]`).forEach(x=>{x.checked=dl.checked;x.closest(".check").classList.toggle("done",dl.checked)}); return }
+  const dl=e.target.closest("[data-daily]"); if(dl){ setDaily(Number(dl.dataset.daily),dl.checked,dl.dataset.day); if(view==="stories") renderStories(); else dl.closest(".check").classList.toggle("done",dl.checked); return }
+  if(e.target.id==="storyPick"){ if(e.target.value){ storyDate=e.target.value; renderStories() } return }
   const c=e.target.closest(".check input"); if(c){ c.closest(".check").classList.toggle("done",c.checked) }
 });
 document.addEventListener("toggle",e=>{ const d=e.target; if(d.matches && d.matches("details[data-sess]") && d.open) openSess=d.dataset.sess; if(d.matches && d.matches("details[data-capday]") && d.open) openCap=d.dataset.capday; },true);
 document.addEventListener("click",e=>{
   const t=e.target.closest("nav.tabs button"); if(t){ view=t.dataset.v; document.querySelectorAll("nav.tabs button").forEach(b=>{ if(b===t) b.setAttribute("aria-current","page"); else b.removeAttribute("aria-current") }); document.querySelectorAll("main>section").forEach(sec=>sec.hidden = sec.id!=="v-"+view); render(); try{localStorage.setItem("handem-view",view)}catch(_){} window.scrollTo(0,0); return }
   const g=e.target.closest("[data-gocap]"); if(g){ openCap=g.dataset.gocap; document.querySelector('nav.tabs button[data-v="grav"]').click(); setTimeout(()=>{const el=document.querySelector(`[data-capday="${openCap}"]`); if(el) el.scrollIntoView({block:"start"})},50); return }
+  const sdb=e.target.closest("[data-sday]"); if(sdb){ storyDate=sdb.dataset.sday; renderStories(); const p=document.querySelector('.days [aria-pressed="true"]'); if(p) p.scrollIntoView({inline:"center",block:"nearest"}); return }
+  const sw=e.target.closest("[data-swap]"); if(sw){ const sel=document.getElementById("sw-"+sw.dataset.swap); if(sel&&sel.value){ ITEMS.forEach(i=>{ if(ck("troca-"+i.id)[0]===sw.dataset.swap) setList("troca-"+i.id,[]) }); setList("troca-"+sel.value,[sw.dataset.swap]); renderAll(); renderIdeias(); sw.textContent="Trocado ✓" } return }
+  const us=e.target.closest("[data-unswap]"); if(us){ setList("troca-"+us.dataset.unswap,[]); renderAll(); if(view==="ideias") renderIdeias(); return }
+  const bs=e.target.closest("[data-bserie]"); if(bs){ bankSerie=bs.dataset.bserie; renderIdeias(); return }
   const f=e.target.closest("[data-f]"); if(f){ filter=f.dataset.f; renderCal(); return }
   const d=e.target.closest("[data-del]"); if(d){ delIdea(d.dataset.del); return }
   if(e.target.id==="exportBtn"){ exportBackup(); return }
