@@ -127,6 +127,7 @@ details.card>summary{cursor:pointer;font-weight:600;color:var(--ink);font-size:.
 .swapbox{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px;padding-top:10px;border-top:1px solid var(--line)}
 .swapbox select{flex:1 1 200px;min-width:0;border-radius:10px}
 .swapped-note{font-size:.75rem;color:var(--berry);font-weight:600}
+.story .phrase{display:block;font-family:var(--display);font-size:1.12rem;line-height:1.35;margin-top:4px;color:var(--ink)}
 .empty{padding:18px;text-align:center;color:var(--muted);font-size:.85rem;border:1px dashed var(--line);border-radius:var(--r)}
 @media (prefers-reduced-motion:no-preference){.card{transition:border-color .15s}}
 </style>
@@ -322,6 +323,70 @@ function bankSection(){
     </details>`).join("")}</div>`;
 }
 
+// Frases de Stories ligadas ao post do feed de cada dia.
+// m = manhã (antes do post) · c = chamada do post · i = interação · f = fecho da noite
+const STORYKIT = {
+ c01:{m:"Bom dia! Hoje eu vou falar de uma coisa que muita gente acha que eu faço… e eu não faço.",c:"Saiu o vídeo. Eu tenho várias empresas e não dou conta de tudo. Gravei porque cansei de ver mulher se cobrando por isso.",i:["Caixinha","O que você ainda faz sozinha que já podia passar pra alguém?"],f:"Hoje eu deleguei uma coisa que antes eu fazia sozinha. Pequeno, mas conta."},
+ c02:{m:"Hoje tem parte 1 de uma série que eu queria fazer há muito tempo.",c:"Coisas que são óbvias pra mim na automaquiagem… e talvez não sejam pra você. Me conta qual você não sabia.",i:["Enquete","Você passa pó no rosto inteiro? · Sim · Não"],f:"Já tô anotando as dúvidas de vocês pra parte 2."},
+ c03:{m:"Tem uma frase que resume muito do que eu quero falar aqui daqui pra frente.",c:"A pele mudou. A técnica precisa acompanhar. Vou mostrar isso na prática nas próximas semanas.",i:["Caixinha","O que mudou na sua pele que a sua maquiagem ainda não acompanhou?"],f:"Li todas as respostas. Muitas viram vídeo."},
+ c04:{m:"Tô com uma novidade que mexe com a minha vida inteira esse mês.",c:"Estamos começando nossa primeira operação em outro estado. Vou mostrar tudo por aqui.",i:["Contagem","Inauguração em São José dos Campos · 24/10"],f:"Diário de SJC, dia 1. Ainda não caiu a ficha."},
+ c05:{m:"Hoje é dia de pele madura. Prepara o caderninho.",c:"Três coisas que podem estar pesando a sua maquiagem sem você perceber.",i:["Quiz","Qual pesa mais? · Muito produto · Pó demais · Corrigir tudo"],f:"Amanhã respondo nos Stories quem errou no quiz."},
+ t01:{m:"Vou soltar uma opinião de maquiadora hoje. Já sei que vai ter gente discordando.",c:"Primer não é obrigatório pra todo mundo. Pronto, falei. Vem discutir nos comentários.",i:["Enquete","Você usa primer? · Sempre · Nunca · Depende"],f:"Teve muita gente defendendo o primer. Amei."},
+ c06:{m:"Sábado foi dia de Automake Class e eu saí com três erros na cabeça.",c:"Os 3 erros que mais apareceram em sala, e como corrigir cada um.",i:["Enquete","Você se viu em algum? · Sim, em todos · Em um · Em nenhum"],f:"Próxima turma? Me manda TURMA no direct."},
+ e01:{m:"Pouca gente sabe que tem uma coisa diferente acontecendo dentro do Espaço Handem.",c:"Tem uma escola de costura aqui na Ilha, dentro do Espaço Handem. Chama no WhatsApp pra saber dos horários.",i:["Enquete","Você sempre quis aprender a costurar? · Sim · Já costuro · Não"],f:"Quem respondeu sim, chama no direct que eu passo as informações."},
+ c07:{m:"Tem dia que eu tenho dez minutos pra ficar pronta. Hoje eu mostro o que eu faço.",c:"Minha maquiagem de 10 minutos, sem segredo.",i:["Quiz","Quanto tempo você tem de manhã? · 5 min · 10 min · 30 min"],f:"Se quiser a versão de 5 minutos, me fala."},
+ c08:{m:"Faltam 6 dias pra inauguração e eu tô sentindo coisa que não esperava.",c:"Postei uma foto e um texto que eu demorei pra escrever.",i:["Caixinha","Qual foi a coisa que te deu mais medo de começar?"],f:"Diário de SJC: hoje foi dia de montar."},
+ c09:{m:"Hoje eu quero te dizer uma coisa que muda o jeito de aprender maquiagem.",c:"Você não precisa aprender a fazer a minha maquiagem. Precisa entender o seu rosto.",i:["Caixinha","Qual parte do seu rosto nenhum tutorial resolve?"],f:"Essas respostas vão virar conteúdo."},
+ t02:{m:"Um comentário de vocês ficou na minha cabeça e eu respondi em vídeo.",c:"Respondi aquela dúvida. Tá lá no perfil.",i:["Caixinha","Manda outra dúvida que eu respondo em vídeo"],f:"Separei mais duas pra semana que vem."},
+ c10:{m:"Faltam três dias. Hoje eu mostro o que ninguém posta.",c:"O que ninguém vê antes de uma inauguração. Real, sem filtro.",i:["Enquete","Você já organizou algo grande? · Sim · Ainda não"],f:"Sábado é o dia. Vem acompanhar."},
+ c11:{m:"Tenho uma pergunta pra você hoje. Pensa com calma.",c:"Depois de adulta, onde a gente faz novas amigas? Falei sobre isso no vídeo de hoje.",i:["Enquete","Você sente falta de um grupo de mulheres? · Muito · Um pouco · Não"],f:"Por isso existe o Handem Club. Manda CLUB no direct pra entrar na lista."},
+ c12:{m:"Pele madura pode usar glow? Hoje eu respondo de vez.",c:"Pode, sim. Mostrei onde e como no vídeo de hoje.",i:["Caixinha","O que você deixou de usar por achar que não era mais pra você?"],f:"Amanhã mostro a inauguração. Ainda tô processando."},
+ c13:{m:"Ontem a gente abriu nossa primeira operação fora do Rio.",c:"Postei o mini-documentário. Foi um capítulo importante da minha história.",i:["Reação","Deixa um emoji pra equipe de SJC"],f:"Obrigada a cada pessoa que fez isso acontecer."},
+ t03:{m:"Hoje tem mais uma opinião de maquiadora. Essa vai dar o que falar.",c:"Ruga nunca foi o problema. Excesso de pó é.",i:["Enquete","Concorda? · Sim · Não · Depende"],f:"Quinta tem teatro. Vem comigo?"},
+ c14:{m:"Hoje é dia de falar de um livro que mudou minha forma de pensar hábito.",c:"A gente superestima motivação e subestima repetição. Falei sobre isso no vídeo.",i:["Caixinha","Qual hábito você está tentando tornar automático?"],f:"O meu: [conte o seu]."},
+ c15:{m:"Faltam dois dias pro Handem Club e a casa tá virando uma oficina de velas.",c:"Tudo que acontece antes de 20 mulheres chegarem aqui.",i:["Você decide","Qual essência vai na mesa? · opção A · opção B"],f:"Contagem pro Club: falta 1 dia."},
+ m01:{m:"Hoje eu vou te mostrar, em poucos slides, por que esse perfil existe.",c:"Uma maquiadora que fala de negócios? Essa é a ideia. Vai lá ver.",i:["Enquete","Por que você me segue? · Maquiagem · Negócios · Vida real · Club"],f:"Esse post vai ficar fixado no perfil."},
+ c17:{m:"Ainda tô com o sábado na cabeça.",c:"Postei o vídeo do Handem Club. Liga o som pra ouvir as risadas.",i:["Caixinha","Quem estava lá: o que você levou de sábado?"],f:"Manda CLUB no direct pra saber da próxima edição antes de todo mundo."},
+ t04:{m:"Fui ver se existe vida após o casamento. Spoiler: eu ri muito.",c:"Postei como foi a peça no Teatro da Ilha.",i:["Enquete","Você ia comigo? · Com certeza · Com o marido · Com as amigas"],f:"Que bom ter um teatro desse tamanho aqui na Ilha."},
+ c18:{m:"Tem um erro com corretivo que eu vejo toda semana.",c:"Quanto mais corretivo, mais a olheira aparece. Mostrei por quê.",i:["Enquete","Seu corretivo… · Marca · Some · Fica ok"],f:"Sexta tem novidade do Club."},
+ c19:{m:"Hoje eu tenho uma coisa importante pra quem pediu a próxima edição do Club.",c:"Isso nunca foi só sobre fazer velas. Comenta CLUB no post pra entrar na lista.",i:["Link","Assinatura do Handem Club: primeiro para a lista Amigas do Club"],f:"Lista Amigas do Club: vocês recebem tudo antes."},
+ c20:{m:"Parte 2 saiu, e foi feita com as dúvidas de vocês.",c:"Mais coisas óbvias pra mim que talvez não sejam pra você.",i:["Caixinha","Qual dúvida ficou de fora?"],f:"Parte 3 já tá sendo montada."},
+ c21:{m:"Hoje eu te levo comigo num dia de noiva.",c:"Vem comigo maquiar uma noiva. Do começo ao espelho.",i:["Reação","Quem aqui é noiva ou vai casar? (eu! 💍)"],f:"Contei como eu escolho cada detalhe da maquiagem de noiva. Domingo eu mostro."},
+ t05:{m:"Hoje é dia de Certo ou errado.",c:"Corretivo: A ou B? Só um deles não marca. Vota nos comentários.",i:["Enquete","A ou B?"],f:"Sexta eu revelo a resposta."},
+ c22:{m:"Tem coisa que eu fazia em toda pele e parei.",c:"Coisas que parei de fazer depois de atender mais peles maduras.",i:["Enquete","Você ainda faz alguma? · Sim · Não"],f:"Comenta PELE no post que eu te mando meu checklist."},
+ c23:{m:"Hoje o vídeo é mais pessoal.",c:"Eu não quero voltar a ser quem eu era. E tá tudo bem.",i:["Caixinha","O que você gosta mais em você hoje?"],f:"Li cada resposta. Obrigada por dividirem isso comigo."},
+ c24:{m:"Antes de abrir qualquer produto numa noiva, eu olho sete coisas.",c:"O que eu observo antes de começar uma maquiagem de noiva.",i:["Caixinha","Noivas: o que mais te preocupa na maquiagem do dia?"],f:"Agenda de noivas: @handemmakeup."},
+ c25:{m:"A primeira coisa que muda numa aula não é a maquiagem.",c:"O que eu mais percebo quando uma mulher começa a aprender a se maquiar.",i:["Caixinha","O que te impede de aprender a se maquiar?"],f:"Próxima turma? Me manda TURMA no direct."},
+ t06:{m:"Fiz uma pergunta pras mulheres do Club e as respostas me pegaram.",c:"O que você faz só por você? Elas responderam. Agora é sua vez.",i:["Caixinha","O que você faz só por você?"],f:"Manda CLUB no direct pra entrar na lista."},
+ c26:{m:"Hoje o vídeo é pra maquiadoras.",c:"Se você trava quando senta uma cliente de pele madura na sua cadeira, esse é pra você.",i:["Caixinha","Maquiadoras: o que mais te dá insegurança na pele madura?"],f:"Comenta PELE no post que eu te mando meu checklist."},
+ c27:{m:"Essa turma começou há três semanas. Olha o que já mudou.",c:"Primeiras semanas de uma turma de maquiadoras.",i:["Caixinha","Maquiadoras: o que você queria ter aprendido no começo?"],f:"Próxima turma profissional? Me chama no direct."},
+ c28:{m:"Teve uma coisa que eu só entendi liderando gente.",c:"Uma coisa que percebi liderando meu time.",i:["Caixinha","O que foi mais difícil de soltar na sua rotina?"],f:"Meu time é o motivo de eu conseguir estar aqui."},
+ c29:{m:"Hoje eu vou falar de ambição. Sem vergonha.",c:"Eu gosto de crescer. E demorei pra falar isso em voz alta.",i:["Enquete","Mulher ainda precisa diminuir a ambição? · Sim · Não"],f:"Um mês atrás eu tava abrindo SJC. Hoje olho pra trás e sorrio."},
+ t07:{m:"Certo ou errado de novo, agora com sobrancelha.",c:"Sobrancelha: A ou B? A diferença é 2 milímetros.",i:["Enquete","A ou B?"],f:"Sexta eu revelo."},
+ c30:{m:"Tem uma frase que resume como eu ensino.",c:"Beleza também é autonomia.",i:["Caixinha","O que você aprendeu a fazer sozinha esse ano?"],f:"Sexta tem um vídeo que fecha esse mês."},
+ c31:{m:"Esse mês eu estive com muitas mulheres diferentes.",c:"O que esse mês me lembrou sobre mulheres.",i:["Caixinha","Qual mulher te lembrou de algo importante esse mês?"],f:"Obrigada por acompanharem esse ciclo comigo."},
+ c16:{m:"Tem uma frase que eu escuto na cadeira quase toda semana.",c:"Uma coisa que anos maquiando mulheres me ensinaram sobre autoestima.",i:["Caixinha","Qual frase sobre você mesma você já repetiu tanto que virou verdade?"],f:"Semana que vem começa um ciclo novo."}
+};
+// Dias sem post: frases por situação
+const DAYKIT = {
+ "2026-10-06":{t:"Dia de gravação",m:"Hoje é dia de gravação. Separei três looks. Vamos ver no que dá.",i:["Enquete","Qual vocês querem ver primeiro? · Automaquiagem · Pele madura"],f:"Gravei 7 vídeos hoje. Agora é editar."},
+ "2026-10-08":{t:"Respostas da semana",m:"Chegou muita resposta no vídeo de automaquiagem. Separei algumas.",i:["Caixinha","Manda sua dúvida de automaquiagem"],f:"Sexta tem uma frase que eu quero que você leia."},
+ "2026-10-10":{t:"Automake Class 2.0 · ao vivo",m:"Hoje é dia de Automake Class 2.0. Vem ver como é.",i:["Enquete","Você faria uma aula de automaquiagem? · Sim · Já fiz"],f:"Turma linda. Terça eu conto os erros que mais apareceram."},
+ "2026-10-17":{t:"Sábado",m:"Diário de SJC: faltam 7 dias.",i:["Você decide","Qual look pra inauguração? · A · B"],f:"Amanhã tem noiva."},
+ "2026-10-22":{t:"Véspera da véspera",m:"Diário de SJC: faltam 2 dias. Malas quase prontas.",i:["Caixinha","Manda uma palavra pra equipe de SJC"],f:"Amanhã a gente viaja."},
+ "2026-10-24":{t:"Inauguração SJC · ao vivo",m:"Hoje é o dia. São José dos Campos, 17h.",i:["Reação","Torce com a gente"],f:"Acho que só agora caiu a ficha."},
+ "2026-10-29":{t:"Teatro da Ilha · ao vivo",m:"Hoje às 20h tem “Existe vida após o casamento” no Teatro da Ilha. Te encontro lá?",i:["Link","Ingressos: jonathannemer.com.br"],f:"Ri muito. Terça eu mostro como foi."},
+ "2026-10-31":{t:"Handem Club · ao vivo",m:"Hoje é dia de Handem Club. Oficina de Velas às 14h.",i:["Reação","Manda um coração pra quem está chegando"],f:"Que tarde. Segunda eu mostro tudo."},
+ "2026-11-05":{t:"Respostas da semana",m:"Muita gente respondeu sobre corretivo. Separei algumas respostas.",i:["Caixinha","Manda sua dúvida de pele"],f:"Amanhã tem novidade do Club."},
+ "2026-11-07":{t:"Sábado",m:"Sábado de trabalho. Mostrando um pouco da rotina.",i:["Você decide","Domingo: automaquiagem parte 2 ou pele madura?"],f:"Segunda tem dia de noiva no feed."},
+ "2026-11-12":{t:"Respostas da semana",m:"O vídeo de pele madura rendeu muitas mensagens. Respondendo algumas.",i:["Caixinha","Manda sua dúvida de pele madura"],f:"Amanhã o vídeo é mais pessoal."},
+ "2026-11-14":{t:"Sábado",m:"Sábado com a agenda cheia. Bastidor do dia.",i:["Enquete","Noivas: vocês querem mais conteúdo de noiva? · Sim · Não"],f:"Amanhã conto o que eu observo antes de uma noiva."},
+ "2026-11-19":{t:"Respostas da semana",m:"Maquiadoras mandaram muita coisa sobre pele madura. Separei algumas.",i:["Caixinha","Maquiadoras: mandem a dúvida de vocês"],f:"Amanhã tem turma no feed."},
+ "2026-11-21":{t:"Sábado",m:"Sábado: bastidor da semana.",i:["Você decide","Próximo Club: atividade A ou B?"],f:"Amanhã falo de liderança."},
+ "2026-11-26":{t:"Respostas da semana",m:"A capa de ontem gerou muita conversa. Separei algumas respostas.",i:["Caixinha","O que você aprendeu a fazer sozinha?"],f:"Amanhã fecha o ciclo."},
+ "2026-11-28":{t:"Sábado",m:"Último sábado do ciclo. Bastidor do mês.",i:["Enquete","O que você quer ver mais em dezembro? · Maquiagem · Club · Negócios · Casamento"],f:"Amanhã o último vídeo do ciclo."}
+};
+
 const CAPTURE = ["Ambiente vazio, antes de tudo","Preparação e montagem","Suas mãos trabalhando","Você em ação, filmada por outra pessoa","Equipe","Detalhes (mesa, produto, decoração)","Pessoas chegando","Reações","Movimento (caminhada, porta abrindo)","Uma fala sua antes","Uma fala sua depois","Áudio natural: risadas e conversas","Resultado final","Autorização de imagem de clientes e alunas"];
 
 const STATUS = ["A fazer","Gravado","Editando","Pronto","Publicado"];
@@ -404,9 +469,7 @@ function renderHoje(){
     ${ag.length?`<h3>Agenda</h3><div class="card">${ag.map(([d,e])=>`<div class="check" style="align-items:baseline"><span class="when" style="min-width:64px">${fmt(d)}</span><span>${esc(e)}</span></div>`).join("")}</div>`:""}
     ${tea?`<h3>Combinado com o Teatro da Ilha</h3><div class="card feature"><span class="when">Story de hoje</span><div class="title" style="margin-bottom:0">${esc(tea[1])}</div></div>`:""}
     <h3>Stories de hoje</h3>
-    <div class="card"><span class="when">Ritual de ${DOWL[td.getDay()].toLowerCase()}</span><div class="title">${esc(rit.r)}</div><div>${esc(rit.m)}</div><p class="note" style="margin:6px 0 0">Interação: ${esc(rit.i)}</p>
-      <details><summary>Roteiro do dia</summary>${DAILY.map((x,k)=>`<div class="check"><input type="checkbox" id="h-d-${k}" data-daily="${k}"${dailyDone(k)?" checked":""}><label for="h-d-${k}">${esc(x.g)}<span class="sub">${esc(x.m)} · ${esc(x.q)}</span></label></div>`).join("")}</details>
-    </div>
+    <div class="card">${(()=>{const ss=storySteps(t<CICLO_INICIO?CICLO_INICIO:t);return ss.slice(0,2).map(x=>`<span class="when">${esc(x.h)} · ${esc(x.t)}</span><div class="story"><span class="phrase">${x.plain?esc(x.f):"“"+esc(x.f)+"”"}</span></div>`).join('<div style="height:10px"></div>')})()}<button class="btn ghost" type="button" onclick="document.querySelector('nav.tabs button[data-v=stories]').click()" style="margin-top:8px;padding-left:0">Ver a sequência completa ›</button></div>
     ${live.length?`<h3>Para captar ao vivo</h3><div class="stack">${live.map(i=>`<div class="card"><span class="when">${esc(i.n)} · post ${fmt(i.d)}</span><div class="title" style="margin-bottom:4px">${esc(i.t)}</div><div class="note">${esc(i.c)}</div></div>`).join("")}</div>`:""}
     <h3>Usar como app</h3>
     <p class="note">No iPhone, abra esta página no Safari, toque em Compartilhar e depois em “Adicionar à Tela de Início”. No Android, use o menu do Chrome e “Adicionar à tela inicial”.</p>`;
@@ -501,44 +564,65 @@ let storyDate = null;
 const CICLO_INICIO = "2026-10-05";
 function addDays(s,n){const d=parse(s);d.setDate(d.getDate()+n);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`}
 function daysBetween(a,b){return Math.round((parse(b)-parse(a))/86400000)}
-function storyPlan(ds){
-  const d=parse(ds), out=[];
-  const rit=RITUALS[d.getDay()];
-  out.push({k:"Ritual de "+DOWL[d.getDay()].toLowerCase(),t:rit.r+": "+rit.m,s:"Interação: "+rit.i});
-  ITEMS.filter(i=>i.d===ds).forEach(i=>out.push({k:"Post do feed hoje",t:`1–2h depois do ${i.n} (“${i.t}”), um Story contando o contexto: “gravei isso porque…”. Nunca só “post novo”.`}));
-  const tea=TEATRO.find(([x])=>x===ds); if(tea) out.push({k:"Combinado com o Teatro da Ilha",t:tea[1],hl:1});
-  const cap=CAPDAYS.find(c=>c.d===ds); if(cap) out.push({k:"Dia ao vivo · "+cap.t,t:"Stories ao vivo ao longo do dia: chegada, um momento no meio, o resultado no fim. Quem filma para o feed não precisa parar para os Stories; use seu celular.",hl:1});
-  AGENDA.filter(([x])=>x===ds).forEach(([,e])=>{ if(!cap) out.push({k:"Na agenda hoje",t:e+": mostre nos Stories antes, durante e depois."}) });
-  if(ds>="2026-10-11" && ds<="2026-10-24"){const n=daysBetween(ds,"2026-10-24"); out.push({k:"Série Diário de SJC",t:n>0?`“Diário de SJC · faltam ${n} ${n===1?"dia":"dias"}”: um bastidor da preparação.`:"“Diário de SJC · hoje”: a inauguração."})}
-  if(ds>="2026-10-26" && ds<="2026-10-31"){const n=daysBetween(ds,"2026-10-31"); out.push({k:"Série Contagem pro Club",t:n>0?`“Contagem pro Club · faltam ${n}”: um detalhe da Oficina de Velas (cera, essência, kit). Toque em “você decide” num deles.`:"Hoje é o Club: Stories ao vivo."})}
-  if(d.getDay()===1) out.push({k:"Segunda",t:"Atualizar os destaques e postar a Agenda da semana com contagem regressiva."});
-  if(d.getDay()===5) out.push({k:"Sexta",t:"Revelar a resposta do “Certo ou errado?” se teve na terça."});
-  return out;
+function storySteps(ds){
+  const steps=[];
+  const post=ITEMS.find(i=>i.d===ds);
+  const cap=CAPDAYS.find(c=>c.d===ds);
+  const tea=TEATRO.find(([x])=>x===ds);
+  if(post){
+    const r=resolved(post);
+    const k=post.id && !r.swapped ? STORYKIT[post.id] : null;
+    const kit=k || {m:"Hoje tem vídeo novo. "+r.h, c:r.t, i:["Caixinha", /^Sem pergunta|^Opcional/.test(r.q)?"O que você achou?":r.q.replace(/^Legenda: /,"")], f:"Obrigada por cada resposta de hoje."};
+    steps.push({h:"Manhã",t:"Rosto falando, antes do post",f:kit.m});
+    steps.push({h:"1–2h depois do post",t:"Chamada do "+post.n+" (compartilhe o post)",f:kit.c});
+    steps.push({h:"Tarde",t:kit.i[0],f:kit.i[1]});
+    steps.push({h:"Noite",t:"Fecho com rosto",f:kit.f});
+  } else {
+    const dk=DAYKIT[ds];
+    if(dk){
+      steps.push({h:"Manhã",t:dk.t,f:dk.m});
+      steps.push({h:"Tarde",t:dk.i[0],f:dk.i[1]});
+      steps.push({h:"Noite",t:"Fecho com rosto",f:dk.f});
+    } else {
+      const last=[...ITEMS].filter(i=>i.d<ds).pop();
+      if(last){ const r=resolved(last);
+        steps.push({h:"Manhã",t:"Respostas do último post",f:`Muita gente respondeu o post de ${fmt(last.d)}. Separei algumas respostas.`});
+        steps.push({h:"Tarde",t:"Caixinha",f:/^Sem pergunta|^Opcional|^Legenda/.test(r.q)?"O que você quer ver aqui essa semana?":r.q});
+        steps.push({h:"Noite",t:"Fecho com rosto",f:"O que ficou do dia, em uma frase."});
+      }
+    }
+  }
+  if(tea) steps.splice(1,0,{h:"Combinado",t:"Teatro da Ilha",f:tea[1],hl:1,plain:1});
+  if(ds>="2026-10-11" && ds<"2026-10-24"){const n=daysBetween(ds,"2026-10-24"); steps.push({h:"Série",t:"Diário de SJC",plain:1,f:`“Diário de SJC · faltam ${n} ${n===1?"dia":"dias"}”: um bastidor da preparação.`})}
+  if(ds>="2026-10-26" && ds<"2026-10-31"){const n=daysBetween(ds,"2026-10-31"); steps.push({h:"Série",t:"Contagem pro Club",plain:1,f:`“Contagem pro Club · faltam ${n}”: um detalhe da Oficina de Velas.`})}
+  if(cap && !DAYKIT[ds]) steps.push({h:"Ao vivo",t:cap.t,plain:1,f:"Stories ao vivo do seu celular: chegada, um momento no meio, o resultado no fim.",hl:1});
+  return steps;
 }
 function renderStories(){
   const t=todayStr(); if(!storyDate) storyDate = t<CICLO_INICIO ? CICLO_INICIO : t;
   if(storyDate<CICLO_INICIO) storyDate=CICLO_INICIO;
   const back=addDays(t,-3); const start = back<CICLO_INICIO ? CICLO_INICIO : back;
   const strip=[...Array(17)].map((_,k)=>addDays(start,k));
-  const sd=parse(storyDate), plan=storyPlan(storyDate);
+  const sd=parse(storyDate), steps=storySteps(storyDate);
   const key="dia-"+storyDate, done=ck(key);
+  const post=ITEMS.find(i=>i.d===storyDate);
   $("#v-stories").innerHTML = `<h2>Stories</h2>
     <div class="row" style="margin:4px 0 8px"><button class="btn ghost" type="button" data-sday="${addDays(storyDate,-1)}" aria-label="Dia anterior"${storyDate<=CICLO_INICIO?" disabled":""}>‹ anterior</button>
       <label class="note" for="storyPick" style="display:flex;gap:6px;align-items:center">Ir para <input id="storyPick" type="date" min="${CICLO_INICIO}" value="${storyDate}" style="font:inherit;border:1px solid var(--line);border-radius:8px;padding:4px 6px;background:var(--surface);color:var(--ink)"></label>
       <button class="btn ghost" type="button" data-sday="${addDays(storyDate,1)}" aria-label="Próximo dia">próximo ›</button></div>
     <div class="days" role="group" aria-label="Escolher dia">${strip.map(x=>{const dx=parse(x);return `<button type="button" data-sday="${x}" aria-pressed="${x===storyDate}" class="${x===t?"today":""}"><span>${DOW[dx.getDay()]}</span><b>${dx.getDate()}</b>${(TEATRO.some(([y])=>y===x)||CAPDAYS.some(c=>c.d===x))?'<i aria-hidden="true"></i>':""}</button>`}).join("")}</div>
-    <h3>${storyDate===t?"Hoje · ":""}${DOWL[sd.getDay()]}, ${sd.getDate()} de ${MON[sd.getMonth()]}</h3>
-    <div class="stack">${plan.map(p=>`<div class="card${p.hl?" feature":""}"><span class="when">${esc(p.k)}</span><div style="margin-top:4px">${esc(p.t)}</div>${p.s?`<p class="note" style="margin:6px 0 0">${esc(p.s)}</p>`:""}</div>`).join("")}</div>
-    <h3>Checklist do dia · ${done.length}/${DAILY.length}</h3>
-    <div class="card">${DAILY.map((x,k)=>`<div class="check${done.includes(k)?" done":""}"><input type="checkbox" id="s-d-${k}" data-daily="${k}" data-day="${storyDate}"${done.includes(k)?" checked":""}><label for="s-d-${k}">${esc(x.g)}<span class="sub">${esc(x.m)} · ${esc(x.q)}</span></label></div>`).join("")}</div>
-    <details class="card" style="margin-top:14px"><summary>Regras de sempre</summary><ul class="plain" style="margin:8px 0 0">
-      <li>8 a 15 Stories por dia, com rosto falando em pelo menos 3.</li>
+    <h3>${storyDate===t?"Hoje · ":""}${DOWL[sd.getDay()]}, ${sd.getDate()} de ${MON[sd.getMonth()]} · ${done.length}/${steps.length}</h3>
+    ${post?`<p class="note" style="margin:-4px 0 10px">No feed: <b>${esc(post.n)} · ${esc(resolved(post).t)}</b></p>`:`<p class="note" style="margin:-4px 0 10px">Sem post no feed hoje.</p>`}
+    <div class="stack">${steps.map((s,k)=>`<div class="card story${s.hl?" feature":""}${done.includes(k)?" done-card":""}">
+      <div class="check" style="border:0;padding:0"><input type="checkbox" id="st-${k}" data-daily="${k}" data-day="${storyDate}"${done.includes(k)?" checked":""}>
+      <label for="st-${k}"><span class="when">${esc(s.h)} · ${esc(s.t)}</span><span class="phrase">${s.plain?esc(s.f):"“"+esc(s.f)+"”"}</span></label></div>
+    </div>`).join("")}</div>
+    <p class="note" style="margin-top:12px">Entre esses, mostre a vida acontecendo como você já faz: trabalho, aula, time, rotina. As frases são ponto de partida; fale do seu jeito.</p>
+    <details class="card" style="margin-top:10px"><summary>Regras de sempre</summary><ul class="plain" style="margin:8px 0 0">
+      <li>Rosto falando em pelo menos 3 Stories por dia.</li>
       <li>Texto na tela em todo Story com fala.</li>
       <li>No máximo 1 Story de venda a cada 5–6; link só com vaga ou data aberta.</li>
-      <li>Uma vez por semana, um “você decide” com uma decisão real.</li>
-      <li>Datas, vagas e bastidor exclusivo saem antes na lista Amigas do Club.</li>
-    </ul></details>
-    <details class="card" style="margin-top:10px"><summary>Checklist de captação para eventos</summary>${CAPTURE.map((c,k)=>`<div class="check"><input type="checkbox" id="cap-${k}"><label for="cap-${k}">${esc(c)}</label></div>`).join("")}</details>`;
+    </ul></details>`;
 }
 
 function renderIdeias(){

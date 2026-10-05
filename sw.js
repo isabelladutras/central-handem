@@ -1,5 +1,5 @@
 // Central Handem: abre sem internet e busca a versão nova quando houver conexão.
-const CACHE = "central-handem-v10";
+const CACHE = "central-handem-v11";
 const FILES = ["./", "./index.html", "./firebase-config.js", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./apple-touch-icon.png"];
 
 self.addEventListener("install", e => {
